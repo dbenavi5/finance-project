@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1716525406480,
+      "tag": "0000_naive_harpoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1716527235837,
+      "tag": "0001_right_the_executioner",
+      "breakpoints": true
+    }
+  ]
+}
