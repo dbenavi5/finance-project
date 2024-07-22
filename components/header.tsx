@@ -19,8 +19,8 @@ export const Header = () => {
           <ClerkLoading>
             <Loader2 className="size-8 animate-spin text-slate-400" />
           </ClerkLoading>
-              </div>
-              <WelcomeMsg/>
+        </div>
+        <WelcomeMsg />
       </div>
     </header>
   );
