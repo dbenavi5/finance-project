@@ -1,7 +1,7 @@
 "use client";
 
 import { useNewAccount } from "@/features/accounts/hooks/use-new-account";
-import { useGetAccounts } from "@/features/accounts/api/use-get-account";
+import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 import { useBulkDeleteAccounts } from "@/features/accounts/api/use-bulk-delete";
 
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ const AccountsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="h-[500px] w-full flex items-center justify-center">
-              <Loader2 className="size-6 text-slate-300 animate-spin" />
+              <Loader2 className="size-16 text-slate-400 animate-spin" />
             </div>
           </CardContent>
         </Card>
