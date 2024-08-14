@@ -15,6 +15,13 @@
       "when": 1716527235837,
       "tag": "0001_right_the_executioner",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1723538365632,
+      "tag": "0002_cool_the_captain",
+      "breakpoints": true
     }
   ]
 }
