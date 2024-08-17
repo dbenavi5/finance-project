@@ -5,7 +5,7 @@ import { parse, subDays } from 'date-fns';
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth';
 import { db } from '@/db/drizzle';
 import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
-import { categories, transactions, insertTransctionsSchema, accounts } from '@/db/schema';
+import { categories, transactions, insertTransactionsSchema, accounts } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 
 const app = new Hono()
@@ -105,7 +105,7 @@ const app = new Hono()
     .post(
         '/',
         clerkMiddleware(),
-        zValidator('json', insertTransctionsSchema.omit({
+        zValidator('json', insertTransactionsSchema.omit({
             id: true,
         })),
         async (c) => {
@@ -128,7 +128,7 @@ const app = new Hono()
         zValidator(
             'json',
             z.array(
-                insertTransctionsSchema.omit({
+                insertTransactionsSchema.omit({
                     id: true,
                 })
             )
@@ -204,7 +204,7 @@ const app = new Hono()
         ),
         zValidator(
             'json',
-            insertTransctionsSchema.omit({
+            insertTransactionsSchema.omit({
                 id: true,
             }),
         ),
