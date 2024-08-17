@@ -5,7 +5,7 @@ import { parse, subDays } from 'date-fns';
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth';
 import { db } from '@/db/drizzle';
 import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
-import { categories, transactions, insertTransctions, accounts } from '@/db/schema';
+import { categories, transactions, insertTransctionsSchema, accounts } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 
 const app = new Hono()
@@ -105,7 +105,7 @@ const app = new Hono()
     .post(
         '/',
         clerkMiddleware(),
-        zValidator('json', insertTransctions.omit({
+        zValidator('json', insertTransctionsSchema.omit({
             id: true,
         })),
         async (c) => {
@@ -122,6 +122,38 @@ const app = new Hono()
 
             return c.json({ data });
         })
+    .post(
+        '/bulk-create',
+        clerkMiddleware(),
+        zValidator(
+            'json',
+            z.array(
+                insertTransctionsSchema.omit({
+                    id: true,
+                })
+            )
+        ),
+        async (c) => {
+            const auth = getAuth(c);
+            const values = c.req.valid('json');
+
+            if (!auth?.userId) {
+                return c.json({ error: 'Unauthorized' }, 401);
+            }
+
+            const data = await db
+                .insert(transactions)
+                .values(
+                    values.map((value) => ({
+                        id: createId(),
+                        ...value
+                    }))
+                )
+                .returning();
+
+            return c.json({ data });
+        }
+    )
     .post(
         '/bulk-delete',
         clerkMiddleware(),
@@ -172,7 +204,7 @@ const app = new Hono()
         ),
         zValidator(
             'json',
-            insertTransctions.omit({
+            insertTransctionsSchema.omit({
                 id: true,
             }),
         ),
