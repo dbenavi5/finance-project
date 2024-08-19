@@ -2,6 +2,7 @@
 // (/api/accounnts) GET API endpoint
 
 import { client } from '@/lib/hono';
+import { convertAmountFromMiliunits } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 
 export const useGetTransaction = (id?: string) => {
@@ -18,7 +19,10 @@ export const useGetTransaction = (id?: string) => {
             }
             // destructure data
             const { data } = await response.json();
-            return data;
+            return {
+                ...data,
+                amount: convertAmountFromMiliunits(data.amount),
+            }
         }
     });
 
