@@ -79,7 +79,7 @@ const app = new Hono()
             );
 
             const incomeChange = calculatePercentageChange(currentPeriod.income, lastPeriod.income);
-            const expenseChange = calculatePercentageChange(currentPeriod.expenses, lastPeriod.expenses);
+            const expensesChange = calculatePercentageChange(currentPeriod.expenses, lastPeriod.expenses);
             const remainingChange = calculatePercentageChange(currentPeriod.remaining, lastPeriod.remaining);
 
             const category = await db
@@ -166,8 +166,8 @@ const app = new Hono()
                     remainingChange,
                     incomeAmount: currentPeriod.income,
                     incomeChange,
-                    expenseAmount: currentPeriod.expenses,
-                    expenseChange,
+                    expensesAmount: currentPeriod.expenses,
+                    expensesChange,
                     categories: finalCategory,
                     days
                 }
