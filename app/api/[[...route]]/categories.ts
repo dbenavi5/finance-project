@@ -74,7 +74,7 @@ const app = new Hono()
 
             const values = c.req.valid('json');
             if (!auth?.userId) {
-                return c.json({ error: 'Unauuthorized' }, 401);
+                return c.json({ error: 'Unauthorized' }, 401);
             }
             const [data] = await db.insert(categories).values({
                 id: createId(),
