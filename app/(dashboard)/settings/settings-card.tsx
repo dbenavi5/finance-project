@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { PlaidConnect } from "./plaid-connect";
 
 export const SettingsCard = () => {
   const connectedBank = null; // Replace with actual data fetching logic
@@ -29,7 +29,7 @@ export const SettingsCard = () => {
                 ? "bank account connected"
                 : "No bank account connected"}
             </div>
-            <Button size={'sm'} variant='ghost'>Connect</Button>
+            <PlaidConnect/>
           </div>
         </div>
       </CardContent>
