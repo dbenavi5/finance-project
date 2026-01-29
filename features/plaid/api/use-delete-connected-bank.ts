@@ -1,32 +1,27 @@
-import { InferRequestType, InferResponseType } from "hono";
+import { InferResponseType } from "hono";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
 import { toast } from "sonner";
 
 type ResponseType = InferResponseType<
-  (typeof client.api.plaid)["exchange-public-token"]["$post"],
-  200
+  (typeof client.api.plaid)["connected-bank"]["$delete"], 200
 >;
-type RequestType = InferRequestType<
-  (typeof client.api.plaid)["exchange-public-token"]["$post"]
->["json"];
 
-export const useExchangePublicToken = () => {
+export const useDeleteConnectedBank = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async (json) => {
-      const response = await client.api.plaid["exchange-public-token"].$post({
-        json,
-      });
+  const mutation = useMutation<ResponseType, Error>({
+    mutationFn: async () => {
+      const response = await client.api.plaid["connected-bank"].$delete();
 
       if (!response.ok) {
-        throw new Error("Failed to exchange public token");
+        throw new Error("Failed to delete connected bank");
       }
       return await response.json();
     },
     onSuccess: () => {
-      toast.success("Public token exchanged");
+      toast.success("Connected bank deleted");
+      
       queryClient.invalidateQueries({ queryKey: ['connectedBank'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -34,7 +29,7 @@ export const useExchangePublicToken = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
     },
     onError: () => {
-      toast.error("Failed to exchange public token");
+      toast.error("Failed to delete connected bank");
     },
   });
 

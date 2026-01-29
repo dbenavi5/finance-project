@@ -5,7 +5,13 @@ import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { createId } from "@paralleldrive/cuid2";
 
 import { db } from "@/db/drizzle";
-import { connectedBanks } from "@/db/schema";
+import { and, eq, isNotNull } from "drizzle-orm";
+import {
+  accounts,
+  categories,
+  connectedBanks,
+  transactions,
+} from "@/db/schema";
 
 import {
   Configuration,
@@ -14,6 +20,7 @@ import {
   PlaidEnvironments,
   Products,
 } from "plaid";
+import { convertAmountToMiliunits } from "@/lib/utils";
 
 const plaidConfiguration = new Configuration({
   basePath: PlaidEnvironments.sandbox,
@@ -28,29 +35,77 @@ const plaidConfiguration = new Configuration({
 const plaidClient = new PlaidApi(plaidConfiguration);
 
 const app = new Hono()
-  .post(
-    "/create-link-token",
-    clerkMiddleware(),
-    async (c) => {
-      const auth = getAuth(c);
+  .get("connected-bank", clerkMiddleware(), async (c) => {
+    const auth = getAuth(c);
 
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+    if (!auth?.userId) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
-      const token = await plaidClient.linkTokenCreate({
-        user: {
-          client_user_id: auth.userId,
-        },
-        client_name: "Finance Manager",
-        products: [Products.Transactions],
-        country_codes: [CountryCode.Us],
-        language: "en",
+    const [connectedBank] = await db
+      .select()
+      .from(connectedBanks)
+      .where(eq(connectedBanks.userId, auth.userId));
+
+    return c.json({ data: connectedBank || null });
+  })
+  .delete("connected-bank", clerkMiddleware(), async (c) => {
+    const auth = getAuth(c);
+
+    if (!auth?.userId) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const [connectedBank] = await db
+      .delete(connectedBanks)
+      .where(eq(connectedBanks.userId, auth.userId))
+      .returning({
+        id: connectedBanks.id,
       });
+    
+    if (!connectedBank) {
+      return c.json({ error: "No connected bank found" }, 404);
+    }
+    
+    await db
+      .delete(accounts)
+      .where(
+        and(
+          eq(accounts.userId, auth.userId),
+          isNotNull(accounts.plaidId),
+        )
+    );
+    
+    await db
+      .delete(categories)
+      .where(
+        and(
+          eq(categories.userId, auth.userId),
+          isNotNull(categories.plaidId),
+        )
+      );
 
-      return c.json({ data: token.data.link_token }, 200);
-    },
-  )
+    return c.json({ data: connectedBank });
+  })
+  .post("/create-link-token", clerkMiddleware(), async (c) => {
+    const auth = getAuth(c);
+
+    if (!auth?.userId) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const token = await plaidClient.linkTokenCreate({
+      user: {
+        client_user_id: auth.userId,
+      },
+      client_name: "Finance Manager",
+      products: [Products.Transactions],
+      country_codes: [CountryCode.Us],
+      language: "en",
+    });
+
+    return c.json({ data: token.data.link_token }, 200);
+  })
   .post(
     "/exchange-public-token",
     clerkMiddleware(),
@@ -58,7 +113,7 @@ const app = new Hono()
       "json",
       z.object({
         publicToken: z.string(),
-      })
+      }),
     ),
     async (c) => {
       const auth = getAuth(c);
@@ -81,8 +136,76 @@ const app = new Hono()
         })
         .returning();
 
-      return c.json({ data: exchange.data.access_token }, 200);
+      const plaidTransactions = await plaidClient.transactionsSync({
+        access_token: connectedBank.accessToken,
+      });
+
+      const plaidAccounts = await plaidClient.accountsGet({
+        access_token: connectedBank.accessToken,
+      });
+
+      const plaidCategories = await plaidClient.categoriesGet({});
+
+      const newAccounts = await db
+        .insert(accounts)
+        .values(
+          plaidAccounts.data.accounts.map((account) => ({
+            id: createId(),
+            name: account.name,
+            plaidId: account.account_id,
+            userId: auth.userId,
+          })),
+        )
+        .returning();
+
+      const newCategories = await db
+        .insert(categories)
+        .values(
+          plaidCategories.data.categories.map((category) => ({
+            id: createId(),
+            name: category.hierarchy.join(", "),
+            plaidId: category.category_id,
+            userId: auth.userId,
+          })),
+        )
+        .returning();
+
+      const newTransactionsValues = plaidTransactions.data.added.reduce(
+        (acc, transaction) => {
+          const account = newAccounts.find(
+            (account) => account.plaidId === transaction.account_id,
+          );
+
+          const category = newCategories.find(
+            (category) => category.plaidId === transaction.category_id,
+          );
+
+          const amountInMiliunits = convertAmountToMiliunits(
+            transaction.amount,
+          );
+
+          if (account) {
+            acc.push({
+              id: createId(),
+              amount: amountInMiliunits,
+              payee: transaction.merchant_name || transaction.name,
+              notes: transaction.name,
+              date: new Date(transaction.date),
+              accountId: account.id,
+              categoryId: category?.id,
+            });
+          }
+          return acc;
+        },
+        [] as (typeof transactions.$inferInsert)[],
+      );
+
+      if (newTransactionsValues.length > 0) {
+        await db.insert(transactions).values(newTransactionsValues);
+      }
+
+      return c.json({ ok: true }, 200);
     },
-  )
+  );
 
 export default app;
