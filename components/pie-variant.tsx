@@ -43,6 +43,7 @@ export const PieVariant = ({ data }: Props) => {
                       <span className="text-sm text-muted-foreground">
                         {entry.value}
                       </span>
+                      {' '}
                       <span className="text-sm">
                         {formatPercentage(entry.payload.percent * 100)}
                       </span>
