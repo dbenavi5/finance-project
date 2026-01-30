@@ -12,9 +12,19 @@ export const metadata: Metadata = {
   title: "Finance Manager",
   description: "Track and manage your finances with ease.",
   icons: {
-    icon: '/logo.svg',
-    apple: '/apple-touch-icon.png',
-  }
+    icon: [
+      {
+        media: "(prefers-color-scheme: dark)",
+        url: "/logo-dark.svg",
+        href: "/logo-dark.svg",
+      },
+      {
+        media: "(prefers-color-scheme: light)",
+        url: "/favicon.svg",
+        href: "/favicon.svg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +36,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
-          <Toaster/>
+          <Toaster />
           <QueryProvider>
             <SheetProvider />
             {children}
