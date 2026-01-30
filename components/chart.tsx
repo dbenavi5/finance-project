@@ -1,15 +1,16 @@
+import { useState } from "react";
+import { usePaywall } from "@/features/subscriptions/hooks/use-paywall";
+
+import { AreaVariant } from "@/components/area-variant";
+import { BarVariant } from "@/components/bar-variant";
+import { LineVariant } from "@/components/line-variant";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AreaChart, BarChart3, FileSearch, LineChart, Loader2 } from "lucide-react";
-import { AreaVariant } from "@/components/area-variant";
-import { BarVariant } from "@/components/bar-variant";
-import { LineVariant } from "@/components/line-variant";
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import {
+  AreaChart,
+  BarChart3,
+  FileSearch,
+  LineChart,
+  Loader2
+} from "lucide-react";
 
 type Props = {
   data?: {
@@ -28,8 +37,13 @@ type Props = {
 
 export const Chart = ({ data = [] }: Props) => {
   const [chartType, setChartType] = useState("area");
+  const { shouldBlock, triggerPaywall } = usePaywall();
+  
   const onTypeChange = (type: string) => {
-    // TODO: add paywall
+    if (type !== 'area' && shouldBlock) { 
+      triggerPaywall();
+      return;
+    }
     setChartType(type);
   };
   return (
