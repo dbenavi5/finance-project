@@ -20,14 +20,14 @@ export const AmountInput = ({
   placeholder,
   disabled,
 }: Props) => {
-  const parsedValue = parseFloat(value);
+  const parsedValue = Number.parseFloat(value);
   const isIncome = parsedValue > 0;
   const isExpense = parsedValue < 0;
 
   const onReverseValue = () => {
     if (!value) return;
 
-    const newValue = parseFloat(value) * -1;
+    const newValue = Number.parseFloat(value) * -1;
     onChange(newValue.toString());
   };
   return (

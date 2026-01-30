@@ -1,40 +1,19 @@
 {
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1716525406480,
-      "tag": "0000_naive_harpoon",
+      "version": "6",
+      "when": 1769740596714,
+      "tag": "0000_nice_gladiator",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "5",
-      "when": 1716527235837,
-      "tag": "0001_right_the_executioner",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1723538365632,
-      "tag": "0002_cool_the_captain",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1723616119562,
-      "tag": "0003_steady_the_leader",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1769640889621,
-      "tag": "0004_aspiring_clint_barton",
+      "version": "6",
+      "when": 1769741236817,
+      "tag": "0001_lumpy_bucky",
       "breakpoints": true
     }
   ]
